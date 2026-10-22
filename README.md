@@ -5,6 +5,20 @@ Users log in with a **password + voice**, admins get a secure management console
 Built on the existing microphone → preprocessing → MFCC/embedding → speaker
 verification pipeline.
 
+## 📚 Course Project
+
+**Signals and Systems (S&S) — B.E. CSE VII Semester**  
+Laboratory project demonstrating practical signal processing for speaker verification:
+- **Signal acquisition**: microphone → ADC → digital waveform
+- **Preprocessing**: resampling, mono conversion, VAD-based silence removal
+- **Noise reduction**: spectral-gate denoising (stationary/non-stationary)
+- **Feature extraction**: MFCC (cepstral coefficients) + statistical pooling
+- **Speaker modeling**: cosine similarity, SVM, and deep embeddings (Resemblyzer, ECAPA-TDNN)
+- **Decision**: thresholded verification with per-model calibrated cutoffs
+- **Cross-sensitivity mitigation**: SNR gating, speech-duration gating, gain normalization
+
+This project applies core S&S concepts — sampling, filtering, spectral analysis, feature extraction, and statistical decision theory — to a real biometric authentication pipeline.
+
 ## What's new
 
 - Clean landing page with **User Login / Create Account** and **Admin Login**.
