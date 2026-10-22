@@ -1,23 +1,61 @@
 # Voice-Based Authentication System
 
+> **Semester Project — Signals & Systems (S&S)**  
+> **B.E. Computer Science & Engineering — VII Semester**  
+> **Supervised by: Sir Engr. Asif Ali**  
+> **Department of Computer Science & Engineering**
+
 A local, CPU-only Streamlit application with **separate Admin and User portals**.
 Users log in with a **password + voice**, admins get a secure management console.
 Built on the existing microphone → preprocessing → MFCC/embedding → speaker
 verification pipeline.
 
-## 📚 Course Project
+---
 
-**Signals and Systems (S&S) — B.E. CSE VII Semester**  
-Laboratory project demonstrating practical signal processing for speaker verification:
-- **Signal acquisition**: microphone → ADC → digital waveform
-- **Preprocessing**: resampling, mono conversion, VAD-based silence removal
-- **Noise reduction**: spectral-gate denoising (stationary/non-stationary)
-- **Feature extraction**: MFCC (cepstral coefficients) + statistical pooling
-- **Speaker modeling**: cosine similarity, SVM, and deep embeddings (Resemblyzer, ECAPA-TDNN)
-- **Decision**: thresholded verification with per-model calibrated cutoffs
-- **Cross-sensitivity mitigation**: SNR gating, speech-duration gating, gain normalization
+## 🎯 Project Objective
 
-This project applies core S&S concepts — sampling, filtering, spectral analysis, feature extraction, and statistical decision theory — to a real biometric authentication pipeline.
+Design and implement a **speaker verification system** that applies core **Signals & Systems** concepts to a real-world biometric authentication problem. The pipeline demonstrates how theoretical signal processing translates into a working security application:
+
+| S&S Concept | Implementation in This Project |
+|-------------|--------------------------------|
+| **Sampling & Quantization** | Microphone ADC → 16 kHz, 16-bit PCM (`audio/recorder.py`) |
+| **LTI Filtering / Resampling** | `librosa.resample` to canonical 16 kHz (`audio/preprocessing.py`) |
+| **Time–Frequency Analysis** | STFT → Mel filterbank → MFCCs (`models/feature_extraction.py`) |
+| **Cepstral Analysis** | 20-dim MFCC + Δ/ΔΔ statistics → compact speaker vector |
+| **Spectral Subtraction / Gating** | `noisereduce` spectral gate (`audio/noise_reduction.py`) |
+| **Voice Activity Detection** | WebRTC VAD (energy fallback) → speech-only frames (`audio/preprocessing.py`) |
+| **SNR Estimation** | Spectral flatness proxy → quality gate (≥ 5 dB) |
+| **Statistical Decision Theory** | Cosine similarity / SVM / PLDA-style thresholds per model |
+| **Cross-Sensitivity Reduction** | Gain norm, SNR gate, duration gate, VAD — nuisance factors attenuated before embedding |
+
+---
+
+## 🔬 Signal Processing Pipeline
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐    ┌────────────────┐    ┌──────────────┐    ┌───────────────┐
+│  Microphone │───▶│ 16 kHz Mono  │───▶│ WebRTC VAD  │───▶│ Spectral-Gate  │───▶│ Peak Normalize │───▶│ MFCC / Embed  │
+│  (Analog)   │    │  Resample    │    │  Speech Gate │    │  Denoise (0.3) │    │  -0.5 dBFS     │    │  Extract      │
+└─────────────┘    └──────────────┘    └─────────────┘    └────────────────┘    └──────────────┘    └───────┬───────┘
+                                                                                                              │
+                                                                                                              ▼
+                                                                       ┌─────────────────────────────────────────────────┐
+                                                                       │           SPEAKER VERIFICATION                │
+                                                                       │  ┌─────────┐ ┌─────────┐ ┌──────────┐ ┌───────┐  │
+                                                                       │  │Resemblyzer│ │ECAPA-TDNN│ │MFCC+Cos │ │MFCC+SVM│  │
+                                                                       │  │  (256-d) │ │  (192-d) │ │  (40-d) │ │(40-d)  │  │
+                                                                       │  └────┬────┘ └────┬────┘ └────┬────┘ └───┬───┘  │
+                                                                       │       │         │         │         │        │
+                                                                       │       └─────────┴────┬────┴─────────┘        │
+                                                                       │                    ▼                          │
+                                                                       │         Cosine Similarity / SVM Decision      │
+                                                                       │         Threshold: 0.80 / 0.30 / 0.95 / 0.75  │
+                                                                       │                    ▼                          │
+                                                                       │         ✅ ACCEPT  /  ❌ REJECT               │
+                                                                       └─────────────────────────────────────────────────┘
+```
+
+**Key design principle:** *Remove nuisance variability (noise, silence, gain, channel) before the speaker embedding — preserve only speaker-discriminative information.* This is cross-sensitivity reduction in the S&S sense: the "sensor" (pipeline) responds to the target measurand (speaker identity) while rejecting interfering inputs.
 
 ## What's new
 
